@@ -62,7 +62,7 @@ omega_BwrtN_rps = deg2rad([0; 0; 0.01]); % Rotate about the down axis
 simout_b = sim('rotation_b', 'TimeOut', flight_time_s);
 tout_b = simout_b.tout;
 % yaw pitch roll, or psi theta phi
-euler_angles_NfromB_euler_kin_deg = simout_b.euler_angles_NfromB_euler_kin_deg;
+euler_angles_NfromB_euler_kin_deg = rad2deg(simout_b.euler_angles_NfromB_euler_kin_deg);
 
 figure()
 plot(tout_b, euler_angles_NfromB_euler_kin_deg(:,1));
@@ -74,7 +74,7 @@ title("P1b: angular rotation (H method)");
 simout_c = sim('rotation_c', 'TimeOut', flight_time_s);
 tout_c = simout_c.tout;
 % yaw pitch roll, or psi theta phi
-euler_angles_NfromB_strapdown_deg = simout_c.euler_angles_NfromB_strapdown_deg;
+euler_angles_NfromB_strapdown_deg = rad2deg(simout_c.euler_angles_NfromB_strapdown_deg);
 
 figure()
 plot(tout_c, euler_angles_NfromB_strapdown_deg(:,1));
