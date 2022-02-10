@@ -9,7 +9,10 @@ addpath('fv_sim/fv_sim/user_defined_libraries');
 %% Simulation Setup
 
 % Constants. TODO: move these out into their own folder
-re_m = 6378000; % Radius of Earth
+re_m            = 6378000; % Radius of Earth
+
+% Simulation Parameters
+flight_time_s   = 1000; % Time used to set up simulink simulation %TODO connect this to Simulink
 
 
 % ===== Initial Conditions =====
@@ -17,7 +20,7 @@ re_m = 6378000; % Radius of Earth
 % Vehicle State
 ExE_BfromE_0_m  = [re_m; 0; 0]; % Starting vector of body in ECEF frame and CS
 EvB_BfromE_mps  = [150; 0; 0]; % Velocity of the body in ECEF frame in the body CS
-omega_BwrtN_dps = [0; 0; 0.11]; % roll pitch yaw rates, or phi theta psi rates. (IE, rotate about the down axis)
+omega_BwrtN_dps = [0; 0; 1]; % roll pitch yaw rates, or phi theta psi rates. (IE, rotate about the down axis)
 omega_BwrtN_rps = deg2rad(omega_BwrtN_dps);
 
 % Frames and Coordinate Systems
@@ -28,19 +31,26 @@ euler_angles_NfromB_0_rad   = deg2rad(euler_angles_NfromB_0_deg);
 
 % ===== Simulation =====
 
-% Simulation Parameters
-flight_time_s = 1000; % Time used to set up simulink simulation %TODO connect this to Simulink
-
 % Run the simulink model
 simout = sim('fv_sim', 'TimeOut', flight_time_s);
 
 % Get simulation outputs
 tout                    = simout.tout;
 ExE_BfromE_m            = simout.ExE_BfromE_m;
-euler_angles_NfromB_deg = simout.euler_angles_NfromB_deg;
+euler_angles_NfromB_deg = simout.euler_angles_NfromB_rad*180/pi;
 
 
 % ===== Post Processing =====
 
-
+figure()
+title("Problem 2b: unique initial conditions");
+subplot(1,3,1);
+plot(tout, ExE_BfromE_m(:,1));
+title("X position vs time");
+subplot(1,3,2);
+plot(tout, ExE_BfromE_m(:,2));
+title("Y position vs time");
+subplot(1,3,3);
+plot(tout, ExE_BfromE_m(:,3));
+title("Z position vs time");
 

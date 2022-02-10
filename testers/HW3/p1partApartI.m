@@ -36,8 +36,15 @@ plot(tout, ExE_BfromE_m_part_i(:,3));
 title("P1a Part I: Z position with constant C_E_B");
 
 figure()
+subplot(1,3,1);
+plot(tout, ExE_BfromE_m_part_ii(:,1));
+title("X position with lat/lon-based C_E_B");
+subplot(1,3,2);
+plot(tout, ExE_BfromE_m_part_ii(:,2));
+title("Y position with lat/lon-based C_E_B");
+subplot(1,3,3);
 plot(tout, ExE_BfromE_m_part_ii(:,3));
-title("P1a Part II: Z position with lat/lon-based C_E_B");
+title("Z position with lat/lon-based C_E_B");
 
 %% Part b
 
