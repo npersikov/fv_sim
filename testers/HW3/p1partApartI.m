@@ -31,11 +31,18 @@ tout = simout.tout;
 ExE_BfromE_m_part_i = simout.ExE_BfromE_m_part_i;
 ExE_BfromE_m_part_ii = simout.ExE_BfromE_m_part_ii;
 
-figure()
+figure(1)
+subplot(1,3,1);
+plot(tout, ExE_BfromE_m_part_i(:,1));
+title("P1a Part I: X position with constant C_E_B");
+subplot(1,3,2);
+plot(tout, ExE_BfromE_m_part_i(:,2));
+title("P1a Part I: Y position with constant C_E_B");
+subplot(1,3,3);
 plot(tout, ExE_BfromE_m_part_i(:,3));
 title("P1a Part I: Z position with constant C_E_B");
 
-figure()
+figure(2)
 subplot(1,3,1);
 plot(tout, ExE_BfromE_m_part_ii(:,1));
 title("X position with lat/lon-based C_E_B");
@@ -49,7 +56,7 @@ title("Z position with lat/lon-based C_E_B");
 %% Part b
 
 % roll pitch yaw, or phi theta psi
-omega_BwrtN_rps = [0; 0; 0.11]; % Rotate about the down axis
+omega_BwrtN_rps = deg2rad([0; 0; 0.01]); % Rotate about the down axis
 
 % Run the simulink model
 simout_b = sim('rotation_b', 'TimeOut', flight_time_s);
@@ -79,7 +86,7 @@ title("P1c: angular rotation (strapdown eqns)");
 simout_d = sim('rotation_d', 'TimeOut', flight_time_s);
 tout_d = simout_d.tout;
 % yaw pitch roll, or psi theta phi
-euler_angles_NfromB_quat_deg = simout_d.euler_angles_NfromB_quat_deg;
+euler_angles_NfromB_quat_deg = rad2deg(simout_d.euler_angles_NfromB_quat_deg);
 
 figure()
 plot(tout_d, euler_angles_NfromB_quat_deg(:,1));
