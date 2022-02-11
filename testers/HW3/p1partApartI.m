@@ -4,7 +4,7 @@ clear
 close all
 
 % Add all custom libraries to the workspace
-addpath('fv_sim/fv_sim/user_defined_libraries');
+addpath('C:\Users\Nikita\Documents\USC\Homework\Spring 2022\Flight Vehicle Stability and Control\fv_sim\fv_sim\user_defined_libraries');
 
 %% Part a 
 
