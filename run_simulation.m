@@ -5,6 +5,7 @@ close all
 
 % Add all custom libraries to the workspace
 addpath('C:\Users\Nikita\Documents\USC\Homework\Spring 2022\Flight Vehicle Stability and Control\fv_sim/fv_sim/user_defined_libraries');
+% system('run_flightgear.bat');
 
 %% Simulation Setup
 
@@ -25,7 +26,7 @@ J = [900, 0, 0;
 % ===== Initial Conditions =====
 
 % Vehicle State
-ExE_BfromE_0_m  = [re_m; 0; 0]; % Starting vector of body in ECEF frame and CS
+ExE_BfromE_0_m  = [re_m+6000; 0; 0]; % Starting vector of body in ECEF frame and CS
 EvB_BfromE_mps  = [0; 0; 0]; % Velocity of the body in ECEF frame in the body CS
 omega_BwrtN_dps = [0; 0; 0.01]; % roll pitch yaw rates, or phi theta psi rates. (IE, rotate about the down axis)
 omega_BwrtN_rps = deg2rad(omega_BwrtN_dps);
