@@ -5,7 +5,6 @@ close all
 
 % Add all custom libraries to the workspace
 addpath('C:\Users\Nikita\Documents\USC\Homework\Spring 2022\Flight Vehicle Stability and Control\fv_sim/fv_sim/user_defined_libraries');
-plots_on = false;
 
 %% Simulation Setup
 
@@ -16,12 +15,12 @@ g_mps2          = 9.81;
 % Simulation Parameters
 flight_time_s   = 1000; % Time used to set up simulink simulation %TODO connect this to Simulink
 
+% Post-Processing Parameters
+plots_on        = false; % True if plots are needed
+
 % ===== Vehicle Parameters =====
 
-m = 1000;
-J = [900, 0, 0;
-    0, 200, 0;
-    0, 0, 600];
+[cg_m, m_kg, J_kgm2] = get_mass_props();
 
 % ===== Initial Conditions =====
 
@@ -31,7 +30,7 @@ lon_d           = -115;  % W115;
 ground_level_m  = 7968;  % Found through trial and error for N35.28 W115
 altitude_m      = 500; 
 
-ExE_BfromE_0_m  = lla2ecef([lat_d, lon_d, ground_level_m + altitude_m]); % SoCal
+ExE_BfromE_0_m  = lla2ecef([lat_d, lon_d, ground_level_m + altitude_m])'; % SoCal
 EvB_BfromE_mps  = [0; 0; 0]; % Velocity of the body in ECEF frame in the body CS
 omega_BwrtN_dps = [0; 0; 0]; % roll pitch yaw rates, or phi theta psi rates. (IE, rotate about the down axis)
 omega_BwrtN_rps = deg2rad(omega_BwrtN_dps);
