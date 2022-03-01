@@ -22,9 +22,9 @@ J_yyp_list = cmg(:,1)/12.*(cmg(:,2).^2 + cmg(:,4).^2);
 J_zzp_list = cmg(:,1)/12.*(cmg(:,2).^2 + cmg(:,3).^2);
 
 % Parallel axis theorem terms
-mx2_list = cmg(:,1).*cmg(:,5).^2;
-my2_list = cmg(:,1).*cmg(:,6).^2;
-mz2_list = cmg(:,1).*cmg(:,7).^2;
+mx2_list = cmg(:,1).*((cmg(:,6) - cg_m(2)).^2 + (cmg(:,7) - cg_m(3)).^2);
+my2_list = cmg(:,1).*((cmg(:,5) - cg_m(1)).^2 + (cmg(:,7) - cg_m(3)).^2);
+mz2_list = cmg(:,1).*(((cmg(:,6) - cg_m(2)).^2 + (cmg(:,5) - cg_m(1)).^2));
 
 % Calculate inertias of each component wrt the plane
 J_xx_list = J_xxp_list + mx2_list;

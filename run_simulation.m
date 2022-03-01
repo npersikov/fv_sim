@@ -27,12 +27,12 @@ plots_on        = false; % True if plots are needed
 % Vehicle State
 lat_d           = 35.28; % N35.28
 lon_d           = -115;  % W115;
-ground_level_m  = 7968;  % Found through trial and error for N35.28 W115
-altitude_m      = 500; 
+ground_level_m  = 995;  % 995 for N35.28 W115 7968 Found through trial and error for N35.28 W-115
+altitude_m      = 100; 
 
 ExE_BfromE_0_m  = lla2ecef([lat_d, lon_d, ground_level_m + altitude_m])'; % SoCal
-EvB_BfromE_mps  = [0; 0; 0]; % Velocity of the body in ECEF frame in the body CS
-omega_BwrtN_dps = [0; 0; 0]; % roll pitch yaw rates, or phi theta psi rates. (IE, rotate about the down axis)
+EvB_BfromE_mps  = [100; 0.00001; 0.00001]; % Velocity of the body in ECEF frame in the body CS
+omega_BwrtN_dps = [0.00001; 0.00001; 0.00001]; % roll pitch yaw rates, or phi theta psi rates. (IE, rotate about the down axis)
 omega_BwrtN_rps = deg2rad(omega_BwrtN_dps);
 omega_pure_quat = [0; omega_BwrtN_rps]';
 

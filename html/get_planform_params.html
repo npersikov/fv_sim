@@ -1,0 +1,143 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>get_planform_params</title><meta name="generator" content="MATLAB 9.11"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-02-24"><meta name="DC.source" content="get_planform_params.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Define Aircraft Mass and Geometry Properties (using grams)</a></li><li><a href="#3">Calculate Remaining Aerodynamic Properties</a></li></ul></div><pre class="codeinput"><span class="comment">% Each output is a list of the respective parameters in this order:</span>
+<span class="comment">% elevator, rudder, left wing, right wing.</span>
+<span class="keyword">function</span> [surf_pos_m, c_m, b_m, S_m2, AR] = get_planform_params()
+</pre><h2 id="2">Define Aircraft Mass and Geometry Properties (using grams)</h2><pre class="codeinput">cmg = const.component_masses_geometries;
+</pre><h2 id="3">Calculate Remaining Aerodynamic Properties</h2><pre class="codeinput"><span class="comment">% Chords for each section in meters</span>
+c_el = cmg(3,2);
+c_ru = cmg(4,2);
+c_lw = cmg(2,2);
+c_rw = cmg(1,2);
+
+<span class="comment">% Spans for each section in meters</span>
+b_el = cmg(3,3);
+b_ru = cmg(3,4);
+b_lw = cmg(2,3);
+b_rw = cmg(1,3);
+
+<span class="comment">% Chord, span, area, aspect ratios for elevator, rudder, left wing, right</span>
+<span class="comment">% wing. For the two wings, b, S, and AR need to be added together for the</span>
+<span class="comment">% full wing. Chord is the same for a half wing and full wing.</span>
+c_m     = [c_el, c_ru, c_lw, c_rw];
+b_m     = [b_el, b_ru, b_lw, b_rw];
+S_m2    = c_m.*b_m;
+AR      = b_m./c_m;
+
+<span class="comment">% mid span quarter chord coordinates of elevator; rudder; left wing; right</span>
+<span class="comment">% wing; WRT the reference point WRT which the data from problem 3 was</span>
+<span class="comment">% given.</span>
+surf_pos_m      = [cmg(3,5) + c_el/4, cmg(3,6), cmg(3,7);
+                   cmg(4,5) + c_ru/4, cmg(4,6), cmg(4,7);
+                   cmg(2,5) + c_lw/4, cmg(2,6), cmg(2,7);
+                   cmg(1,5) + c_rw/4, cmg(1,6), cmg(1,7);];
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2021b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% Each output is a list of the respective parameters in this order:
+% elevator, rudder, left wing, right wing.
+function [surf_pos_m, c_m, b_m, S_m2, AR] = get_planform_params()
+
+%% Define Aircraft Mass and Geometry Properties (using grams) 
+cmg = const.component_masses_geometries; 
+
+%% Calculate Remaining Aerodynamic Properties
+
+% Chords for each section in meters
+c_el = cmg(3,2);
+c_ru = cmg(4,2);
+c_lw = cmg(2,2);
+c_rw = cmg(1,2);
+
+% Spans for each section in meters
+b_el = cmg(3,3);
+b_ru = cmg(3,4);
+b_lw = cmg(2,3);
+b_rw = cmg(1,3);
+
+% Chord, span, area, aspect ratios for elevator, rudder, left wing, right
+% wing. For the two wings, b, S, and AR need to be added together for the
+% full wing. Chord is the same for a half wing and full wing.
+c_m     = [c_el, c_ru, c_lw, c_rw];
+b_m     = [b_el, b_ru, b_lw, b_rw];
+S_m2    = c_m.*b_m; 
+AR      = b_m./c_m;
+
+% mid span quarter chord coordinates of elevator; rudder; left wing; right
+% wing; WRT the reference point WRT which the data from problem 3 was
+% given.
+surf_pos_m      = [cmg(3,5) + c_el/4, cmg(3,6), cmg(3,7);
+                   cmg(4,5) + c_ru/4, cmg(4,6), cmg(4,7);
+                   cmg(2,5) + c_lw/4, cmg(2,6), cmg(2,7);
+                   cmg(1,5) + c_rw/4, cmg(1,6), cmg(1,7);];
+
+end
+##### SOURCE END #####
+--></body></html>

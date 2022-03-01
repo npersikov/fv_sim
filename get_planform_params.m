@@ -15,7 +15,7 @@ c_rw = cmg(1,2);
 
 % Spans for each section in meters
 b_el = cmg(3,3);
-b_ru = cmg(3,4);
+b_ru = cmg(4,4);
 b_lw = cmg(2,3);
 b_rw = cmg(1,3);
 
