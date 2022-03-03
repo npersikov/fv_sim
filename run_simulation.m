@@ -39,7 +39,7 @@ omega_pure_quat = [0; omega_BwrtN_rps]';
 % Frames and Coordinate Systems
 ll_NfromE_deg               = [lat_d, lon_d]; % Lat lon and euler angles for DCMs. Note: N is North East Down; Need inv of this DCM
 ll_NfromE_rad               = deg2rad(ll_NfromE_deg); %TODO: figure out where to handle degree changes
-euler_angles_NfromB_0_deg   = [0; 0; 0]; % Body frame same as NED. Note: C_EfromB is found in simulink. NOTE: must be ZYX rotation!
+euler_angles_NfromB_0_deg   = [0.017*0; 0; 0]; % Body frame same as NED. Note: C_EfromB is found in simulink. NOTE: must be ZYX rotation!
 euler_angles_NfromB_0_rad   = deg2rad(euler_angles_NfromB_0_deg);
 omega_EwrtI_rps_0           = [0; 0; 0]; % rotation of Earth
 omega_BwrtI_rps_0           = omega_BwrtN_rps + omega_EwrtI_rps_0; % since initial N to E velocity is 0;0;0
