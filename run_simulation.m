@@ -29,9 +29,10 @@ lat_d           = 35.28; % N35.28
 lon_d           = -115;  % W115;
 ground_level_m  = 995;  % 995 for N35.28 W115 7968 Found through trial and error for N35.28 W-115
 altitude_m      = 100; 
+thrust_N        = 0;
 
 ExE_BfromE_0_m  = lla2ecef([lat_d, lon_d, ground_level_m + altitude_m])'; % SoCal
-EvB_BfromE_mps  = [100; 0.00001; 0.00001]; % Velocity of the body in ECEF frame in the body CS
+EvB_BfromE_mps  = [100; 0.00001; 0]; % Velocity of the body in ECEF frame in the body CS
 omega_BwrtN_dps = [0.00001; 0.00001; 0.00001]; % roll pitch yaw rates, or phi theta psi rates. (IE, rotate about the down axis)
 omega_BwrtN_rps = deg2rad(omega_BwrtN_dps);
 omega_pure_quat = [0; omega_BwrtN_rps]';
@@ -39,12 +40,17 @@ omega_pure_quat = [0; omega_BwrtN_rps]';
 % Frames and Coordinate Systems
 ll_NfromE_deg               = [lat_d, lon_d]; % Lat lon and euler angles for DCMs. Note: N is North East Down; Need inv of this DCM
 ll_NfromE_rad               = deg2rad(ll_NfromE_deg); %TODO: figure out where to handle degree changes
-euler_angles_NfromB_0_deg   = [0.017*0; 0; 0]; % Body frame same as NED. Note: C_EfromB is found in simulink. NOTE: must be ZYX rotation!
-euler_angles_NfromB_0_rad   = deg2rad(euler_angles_NfromB_0_deg);
+euler_angles_BfromN_0_deg   = [0.017*0; 0.017*0; 0.017*0]; % Body frame same as NED. Note: C_EfromB is found in simulink. NOTE: must be ZYX rotation!
+euler_angles_BfromN_0_rad   = deg2rad(euler_angles_BfromN_0_deg);
 omega_EwrtI_rps_0           = [0; 0; 0]; % rotation of Earth
 omega_BwrtI_rps_0           = omega_BwrtN_rps + omega_EwrtI_rps_0; % since initial N to E velocity is 0;0;0
 
 % ===== Simulation =====
+
+% Trim the simulink model
+% [x,u,y,dx] = trim('fv_sim');
+% argout = linmod('fv_sim', x, u);
+% disp("Model Was Trimmed.");
 
 % Run the simulink model
 simout = sim('fv_sim', 'TimeOut', flight_time_s);
