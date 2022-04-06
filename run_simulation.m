@@ -1,10 +1,10 @@
-%% AME 532a HW 3 Problem 2 
+%% AME 532a Simulation Setup and Runner Script
 clc
 clear
 close all
 
 % Add all custom libraries to the workspace
-addpath('C:\Users\Nikita\Documents\USC\Homework\Spring 2022\Flight Vehicle Stability and Control\fv_sim/fv_sim/user_defined_libraries');
+addpath('fv_sim/user_defined_libraries'); %C:\Users\Nikita\Documents\USC\Homework\Spring 2022\Flight Vehicle Stability and Control\fv_sim/
 
 %% Simulation Setup
 
@@ -17,22 +17,23 @@ flight_time_s   = 1000; % Time used to set up simulink simulation %TODO connect 
 
 % Post-Processing Parameters
 plots_on        = false; % True if plots are needed
+rl_plots_on     = true; % True if root locus plots are needed
 
 % ===== Vehicle Parameters =====
 
 [cg_m, m_kg, J_kgm2] = get_mass_props();
 
-% ===== Initial Conditions =====
+%% ===== Initial Conditions =====
 
 % Vehicle State
 lat_d           = 35.28; % N35.28
 lon_d           = -115;  % W115;
 ground_level_m  = 995;  % 995 for N35.28 W115 7968 Found through trial and error for N35.28 W-115
 altitude_m      = 100; 
-thrust_N        = 5;
+thrust_N        = 0;
 
 ExE_BfromE_0_m  = lla2ecef([lat_d, lon_d, ground_level_m + altitude_m])'; % SoCal
-EvB_BfromE_mps  = [50; 0.00001; 0]; % Velocity of the body in ECEF frame in the body CS
+EvB_BfromE_mps  = [50; 0.00001; 10]; % Velocity of the body in ECEF frame in the body CS
 omega_BwrtN_dps = [0.00001; 0.00001; 0.00001]; % roll pitch yaw rates, or phi theta psi rates. (IE, rotate about the down axis)
 omega_BwrtN_rps = deg2rad(omega_BwrtN_dps);
 omega_pure_quat = [0; omega_BwrtN_rps]';
@@ -45,24 +46,59 @@ euler_angles_BfromN_0_rad   = deg2rad(euler_angles_BfromN_0_deg);
 omega_EwrtI_rps_0           = [0; 0; 0]; % rotation of Earth
 omega_BwrtI_rps_0           = omega_BwrtN_rps + omega_EwrtI_rps_0; % since initial N to E velocity is 0;0;0
 
-% ===== Simulation =====
+%% ===== Simulation =====
+
+%% Linearize Model
+% Linearize the model while ignoring translational motion. This linearized
+% ABCD model will allow for stabilizing control system design for steady
+% level flight.
+
+% Set the pitch damping gain 
+% QUESTION: is K_D really the right name for this?
+pitch_gain = -200*1;
 
 % Trim the simulink model
-% [x,u,y,dx] = trim('fv_sim');
-% argout = linmod('fv_sim', x, u);
-% disp("Model Was Trimmed.");
+[x,u,y,dx] = trim('fv_sim_linearized');
+% The order that I think the states are in in the x vector
+states = ["vel_x", "vel_y", "vel_z", "avel_x", "avel_y", "avel_z", "psi", "theta", "phi"];
 
-% Run the simulink model
+% Get a state space model of the linearized system (ABCD matrices)
+argout = linmod('fv_sim_linearized', x, u);
+
+% Get eigenvalues for linearized system
+lin_eigs = eig(argout.a);
+
+% Get transfer functions from the state space model
+[den_coeff, num_coeff] = ss2tf(argout.a, argout.b, argout.c, argout.d);
+
+% Plot the root locus for each state
+if rl_plots_on
+%     for rl_plot_num = 1:1:length(x)
+%         sys = tf(num_coeff, den_coeff(rl_plot_num,:)); 
+%         figure()
+%         rlocus(sys);
+%         title(states(rl_plot_num));
+%         disp("Eigenvalue for " + states(rl_plot_num) + ": " + lin_eigs);
+%     end
+
+    sys = tf(num_coeff, den_coeff(2,:)); 
+    figure()
+    rlocus(sys);
+end
+
+disp("Model Was Trimmed.");
+
+%% Run the nonlinear simulink model
 simout = sim('fv_sim', 'TimeOut', flight_time_s);
 
-% Get simulation outputs
+%% Get simulation outputs
 tout                    = simout.tout;
 ExE_BfromE_m            = simout.ExE_BfromE_m;
 euler_angles_NfromB_deg = rad2deg(simout.euler_angles_NfromB_rad);
 
+%% ===== Post Processing =====
 if plots_on
     
-    % ===== Post Processing =====
     problem = "Problem 2b: ";
     figure(1)
     title("Unique initial conditions");
