@@ -4,8 +4,10 @@ clear
 close all
 
 % Add all custom libraries to the workspace
-addpath('fv_sim/user_defined_libraries'); %C:\Users\Nikita\Documents\USC\Homework\Spring 2022\Flight Vehicle Stability and Control\fv_sim/
-
+run_sim_script_path = mfilename('fullpath');
+run_sim_script_path = run_sim_script_path(1:(length(run_sim_script_path) - 14));
+path_to_libraries = [run_sim_script_path,'user_defined_libraries'];
+addpath(path_to_libraries); %C:\Users\Nikita\Documents\USC\Homework\Spring 2022\Flight Vehicle Stability and Control\fv_sim/
 %% Simulation Setup
 
 % Constants. TODO: move these out into their own folder
@@ -17,7 +19,7 @@ flight_time_s   = 1000; % Time used to set up simulink simulation %TODO connect 
 
 % Post-Processing Parameters
 plots_on        = false; % True if plots are needed
-rl_plots_on     = true; % True if root locus plots are needed
+rl_plots_on     = false; % True if root locus plots are needed
 
 % ===== Vehicle Parameters =====
 
@@ -81,9 +83,11 @@ if rl_plots_on
 %         disp("Eigenvalue for " + states(rl_plot_num) + ": " + lin_eigs);
 %     end
 
-    sys = tf(num_coeff, den_coeff(2,:)); 
+    sys = tf(num_coeff, den_coeff(8,:)); 
     figure()
     rlocus(sys);
+    figure()
+    rlocus(sys, pitch_gain);
 end
 
 disp("Model Was Trimmed.");
