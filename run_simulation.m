@@ -19,7 +19,7 @@ flight_time_s   = 1000; % Time used to set up simulink simulation %TODO connect 
 
 % Post-Processing Parameters
 plots_on        = false; % True if plots are needed
-rl_plots_on     = false; % True if root locus plots are needed
+rl_plots_on     = true; % True if root locus plots are needed
 
 % ===== Vehicle Parameters =====
 
@@ -36,7 +36,7 @@ thrust_N        = [10*0;0;0];
 
 ExE_BfromE_0_m  = lla2ecef([lat_d, lon_d, ground_level_m + altitude_m])'; % SoCal
 EvB_BfromE_mps  = [50; 0.00001; 10]; % Velocity of the body in ECEF frame in the body CS
-omega_BwrtN_dps = [0.00001; 0.00001; 0.00001]; % roll pitch yaw rates, or phi theta psi rates. (IE, rotate about the down axis)
+omega_BwrtN_dps = [0.00001; 0.00001; 10*0.0000001]; % roll pitch yaw rates, or phi theta psi rates. (IE, rotate about the down axis)
 omega_BwrtN_rps = deg2rad(omega_BwrtN_dps);
 omega_pure_quat = [0; omega_BwrtN_rps]';
 
@@ -50,7 +50,13 @@ omega_BwrtI_rps_0           = omega_BwrtN_rps + omega_EwrtI_rps_0; % since initi
 
 %% Control Inputs
 aoa_step_time = 10;
-aoa_step_value = -5*pi/180;
+aoa_step_value = -5*pi/180*0;
+bank_step_time = 10;
+bank_step_value = 10*pi/180;
+
+% Select which control systems are active:
+is_controlling_pitch = false;
+is_controlling_roll = true;
 
 %% ===== Simulation =====
 
@@ -61,7 +67,9 @@ aoa_step_value = -5*pi/180;
 
 % Set the control system gains
 pitch_gain = -10*1;
+roll_rate_gain = 10*1;
 aoa_gain = 500*1; % The gain for angle of attack. Used to command the elevator deflection.
+bank_angle_gain = 100*1; 
 
 % Trim the simulink model
 [x,u,y,dx] = trim('fv_sim_linearized');
@@ -75,7 +83,7 @@ argout = linmod('fv_sim_linearized', x, u);
 lin_eigs = eig(argout.a);
 
 % Get transfer functions from the state space model
-[den_coeff, num_coeff] = ss2tf(argout.a, argout.b, argout.c, argout.d);
+[num_coeff, den_coeff] = ss2tf(argout.a, argout.b, argout.c, argout.d);
 
 % Plot the root locus for each state
 if rl_plots_on
@@ -87,11 +95,33 @@ if rl_plots_on
 %         disp("Eigenvalue for " + states(rl_plot_num) + ": " + lin_eigs);
 %     end
 
-    sys = tf(num_coeff, den_coeff(8,:)); 
+    % Pitch Plots
+%     sys = tf(num_coeff(8,:), den_coeff); 
+%     figure()
+%     rlocus(sys);
+%     figure()
+%     rlocus(sys, pitch_gain);
+
+    % Roll Plots
+    sys = tf(num_coeff(6,:), den_coeff); 
     figure()
     rlocus(sys);
+    title("Roll Rate (General Plot)");
     figure()
-    rlocus(sys, pitch_gain);
+    rlocus(sys, roll_rate_gain);
+    title("Roll Rate (With Gain)");
+
+    sys = tf(num_coeff(9,:), den_coeff); 
+    figure()
+    rlocus(sys);
+    title("Bank Angle (General Plot)");
+    figure()
+    rlocus(sys, bank_angle_gain);
+    title("Bank Angle (With Gain)");
+
+%     roll_step_response_info = stepinfo(sys);
+    figure()
+    step(sys);
 end
 
 disp("Model Was Trimmed.");
