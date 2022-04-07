@@ -32,7 +32,7 @@ lat_d           = 35.28; % N35.28
 lon_d           = -115;  % W115;
 ground_level_m  = 995;  % 995 for N35.28 W115 7968 Found through trial and error for N35.28 W-115
 altitude_m      = 100; 
-thrust_N        = [10;0;0];
+thrust_N        = [10*0;0;0];
 
 ExE_BfromE_0_m  = lla2ecef([lat_d, lon_d, ground_level_m + altitude_m])'; % SoCal
 EvB_BfromE_mps  = [50; 0.00001; 10]; % Velocity of the body in ECEF frame in the body CS
@@ -61,7 +61,7 @@ aoa_step_value = -5*pi/180;
 
 % Set the control system gains
 pitch_gain = -10*1;
-aoa_gain = 100*1; % The gain for angle of attack. Used to command the elevator deflection.
+aoa_gain = 500*1; % The gain for angle of attack. Used to command the elevator deflection.
 
 % Trim the simulink model
 [x,u,y,dx] = trim('fv_sim_linearized');
