@@ -72,18 +72,18 @@ aoa_gain = 500*0; % The gain for angle of attack. Used to command the elevator d
 bank_angle_gain = 100*0; 
 
 % Trim the simulink model
-% [x,u,y,dx] = trim('fv_sim_linearized');
+[x,u,y,dx] = trim('fv_sim_linearized');
 % The order that I think the states are in in the x vector
 states = ["vel_x", "vel_y", "vel_z", "avel_x", "avel_y", "avel_z", "psi", "theta", "phi"];
 
 % Get a state space model of the linearized system (ABCD matrices)
-% argout = linmod('fv_sim_linearized', x, u);
+argout = linmod('fv_sim_linearized', x, u);
 
 % Get eigenvalues for linearized system
-% lin_eigs = eig(argout.a);
+lin_eigs = eig(argout.a);
 
 % Get transfer functions from the state space model
-% [num_coeff, den_coeff] = ss2tf(argout.a, argout.b, argout.c, argout.d);
+[num_coeff, den_coeff] = ss2tf(argout.a, argout.b, argout.c, argout.d);
 
 % Plot the root locus for each state
 if rl_plots_on
