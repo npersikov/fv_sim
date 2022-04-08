@@ -19,7 +19,7 @@ flight_time_s   = 1000; % Time used to set up simulink simulation %TODO connect 
 
 % Post-Processing Parameters
 plots_on        = false; % True if plots are needed
-rl_plots_on     = true; % True if root locus plots are needed
+rl_plots_on     = false; % True if root locus plots are needed
 
 % ===== Vehicle Parameters =====
 
@@ -52,7 +52,7 @@ omega_BwrtI_rps_0           = omega_BwrtN_rps + omega_EwrtI_rps_0; % since initi
 aoa_step_time = 10;
 aoa_step_value = -5*pi/180*0;
 bank_step_time = 10;
-bank_step_value = 10*pi/180;
+bank_step_value = 10*pi/180*0;
 
 % Select which control systems are active:
 is_controlling_pitch = false;
@@ -66,24 +66,24 @@ is_controlling_roll = true;
 % level flight.
 
 % Set the control system gains
-pitch_gain = -10*1;
-roll_rate_gain = 10*1;
-aoa_gain = 500*1; % The gain for angle of attack. Used to command the elevator deflection.
-bank_angle_gain = 100*1; 
+pitch_gain = -10*0;
+roll_rate_gain = 10*0;
+aoa_gain = 500*0; % The gain for angle of attack. Used to command the elevator deflection.
+bank_angle_gain = 100*0; 
 
 % Trim the simulink model
-[x,u,y,dx] = trim('fv_sim_linearized');
+% [x,u,y,dx] = trim('fv_sim_linearized');
 % The order that I think the states are in in the x vector
 states = ["vel_x", "vel_y", "vel_z", "avel_x", "avel_y", "avel_z", "psi", "theta", "phi"];
 
 % Get a state space model of the linearized system (ABCD matrices)
-argout = linmod('fv_sim_linearized', x, u);
+% argout = linmod('fv_sim_linearized', x, u);
 
 % Get eigenvalues for linearized system
-lin_eigs = eig(argout.a);
+% lin_eigs = eig(argout.a);
 
 % Get transfer functions from the state space model
-[num_coeff, den_coeff] = ss2tf(argout.a, argout.b, argout.c, argout.d);
+% [num_coeff, den_coeff] = ss2tf(argout.a, argout.b, argout.c, argout.d);
 
 % Plot the root locus for each state
 if rl_plots_on
