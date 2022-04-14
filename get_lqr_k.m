@@ -14,18 +14,20 @@ function K = get_lqr_k(A, B, C, Q, R, x, P_0, S_0)
     n = length(P_0);
     m = length(S_0);
     % Find P and S matrices using glorified trial and error
-    ps = fminsearch(@(ps)lyap_sys(A, B, C, Q, R, x, n, m, ps), ps_0);
+    options = optimset('MaxFunEvals', 10e10, 'MaxIter', 10e4);
+    ps = fminsearch(@(ps)lyap_sys(A, B, C, Q, R, x, n, m, ps), ps_0, options);
     [P, S] = get_ps(ps, n, m);
     % Calculate K now that all matrices are known
     K = calc_K(B, C, P, R, S);
 end
 
 % The functions that must be solved for P and S
-function [f1, f2] = lyap_sys(A, B, C, Q, R, x, n, m, ps)
+function f = lyap_sys(A, B, C, Q, R, x, n, m, ps)
     [P, S] = get_ps(ps, n, m);
     K = calc_K(B, C, P, R, S);
     f1 = A'*P + P*A + Q + C'*K'*R*K*C;
     f2 = A*S + S*A' + x;
+    f = sum(sum(f1))+sum(sum(f2)); % Since both have to be zero anyway
 end
 
 % Utility function to calculate K from other matrices
