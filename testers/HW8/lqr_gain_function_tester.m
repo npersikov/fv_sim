@@ -18,7 +18,8 @@ dx = x_0 - x; % offset from trim point
 
 % Weight Matrices for LQR controller
 Q = 3*eye(2); % Make this larger for aggressive correction
-R = eye(2);
+R = eye(1);
+N = zeros(2,1);
 
 % Initial Guesses for P and S
 % P_0 = ones(length(x));
@@ -26,6 +27,7 @@ R = eye(2);
 P_0 = [2, 3; 4, 5];
 S_0 = [1, 5.5;3, 5.6];
 
+% [K,S,e] = lqr(A,B,Q,R,N);
 K = get_lqr_k(A, B, C, Q, R, x, P_0, S_0);
 
 function ps = set_ps(P, S)
