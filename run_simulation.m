@@ -139,8 +139,8 @@ end
 % B = magic(9);
 % B = B(:,1);
 % Weight Matrices for LQR controller
-Q = 3*eye(length(x)) + 0.01 * magic(length(x)); % Make this larger for aggressive correction
-R = 1.1*eye(length(u));
+Q = 1*eye(length(x)) + 0.01 * magic(length(x)); % Make this larger for aggressive correction
+R = 100*eye(length(u));
 N = zeros(length(x),length(u));
 % LQR control gains
 % [K_lqr,~,~] = lqr(A, B, Q, R, N);
