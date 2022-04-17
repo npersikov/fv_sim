@@ -21,7 +21,7 @@ cg_m = [-0.2; 0; -0.001]; %placeholder
 % ========== State Vectors ==========
 % NOTE this is actually v_B_BfromA, which must be properly determined when 
 % inputting it into this function
-v_mps = [100; 0; 0]; % Placeholder. 
+v_mps = [100; 0; -2]; % Placeholder. 
 
 % ========== Allocate arrays ==========
 % This array stores net force vectors for each control surface
@@ -53,7 +53,7 @@ for aero_surface = 1:1:4 % There are assumed to be only 4 aero surfaces
     pure_moment = 0.5*rho_kgpm3*(norm(v_mps)^2)*S_m2*C_M*chord_m*surf_to_moment_dir_matrix*get_surf_vec(aero_surface);
 
     % Aero moment due to aero force offset from cg
-    dist_to_cg = cg_m - position_m;
+    dist_to_cg = position_m - cg_m;
     moment_force_contrib = cross(dist_to_cg, aero_forces(:, aero_surface));
 
     % The moment is calculated in two parts: the first is similar to the
