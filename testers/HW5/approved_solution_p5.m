@@ -46,6 +46,9 @@ v_B_B_BA = vB_BfromA_mps;
 om_B_B_BE = [0;0;0];
 x_CM_B = c_m;
 
+% Variable structure descriptions:
+% AeroControlSurfs = [hingepointx, y, z, ,,,,,,,,,,,,,,i_surf]; % four rows, one for each control surface
+
 
     [total_force_b_N, M_ext_B, VisualizationData] = ExternalForcesAndMoments( ...
     u_in, ...

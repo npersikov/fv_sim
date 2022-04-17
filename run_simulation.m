@@ -19,11 +19,15 @@ flight_time_s   = 1000; % Time used to set up simulink simulation %TODO connect 
 
 % Post-Processing Parameters
 plots_on        = false; % True if plots are needed
-rl_plots_on     = true; % True if root locus plots are needed
+rl_plots_on     = false; % True if root locus plots are needed
 
 % ===== Vehicle Parameters =====
 
 [cg_m, m_kg, J_kgm2] = get_mass_props();
+
+% Actuator models
+% order: elevator, rudder, right aileron, left aileron
+time_constant_matrix = 1.2*eye(4); % TODO figure out a better way to calculate these
 
 %% ===== Initial Conditions =====
 
@@ -48,11 +52,18 @@ euler_angles_BfromN_0_rad   = deg2rad(euler_angles_BfromN_0_deg);
 omega_EwrtI_rps_0           = [0; 0; 0]; % rotation of Earth
 omega_BwrtI_rps_0           = omega_BwrtN_rps + omega_EwrtI_rps_0; % since initial N to E velocity is 0;0;0
 
+% Other states:
+% Moment applied by the two paylaod release stepper motors. It is applied
+% to the y axis, and they spin forwards, which adds a positive reaction
+% moment. Turning them on and switching direction will be handled in the
+% simulink model.
+payload_release_motor_moment_Nm = [0; 1.08; 0]; 
+
 %% Control Inputs
 aoa_step_time = 10;
 aoa_step_value = -5*pi/180*0;
 bank_step_time = 10;
-bank_step_value = 10*pi/180;
+bank_step_value = 10*pi/180*0;
 
 % Select which control systems are active:
 is_controlling_pitch = false;
@@ -66,10 +77,10 @@ is_controlling_roll = true;
 % level flight.
 
 % Set the control system gains
-pitch_gain = -10*1;
-roll_rate_gain = 10*1;
-aoa_gain = 500*1; % The gain for angle of attack. Used to command the elevator deflection.
-bank_angle_gain = 100*1; 
+pitch_gain = -10*0;
+roll_rate_gain = 10*0;
+aoa_gain = 500*0; % The gain for angle of attack. Used to command the elevator deflection.
+bank_angle_gain = 100*0; 
 
 % Trim the simulink model
 [x,u,y,dx] = trim('fv_sim_linearized');
