@@ -15,7 +15,7 @@ rho_kgpm3 = 1.225;
 
 % ========== Overall Aircraft Characteristics ==========
 % Vector from aircraft frame center to the cg
-cg_m = [-0.2; 0; -0.001]; %placeholder
+cg_m = [-0.496987516, 0, -0.018755961]; % Real aircraft cm
 
 % NOTE later these will be function inputs
 % ========== State Vectors ==========
@@ -76,29 +76,54 @@ function [C_L, C_D, C_M] = get_coeffs(aero_surface, v_mps)
 
     alpha = get_alpha(aero_surface, v_mps);
 
-    [C_L_alpha, C_D_alpha, C_M_alpha] = get_slopes(aero_surface);
-    [C_L0, C_D0, C_M0]                = get_coeff_offset(aero_surface);
+%     [C_L_alpha, C_D_alpha, C_M_alpha] = get_slopes(aero_surface);
+%     [C_L0, C_D0, C_M0]                = get_coeff_offset(aero_surface);
+% 
+%     C_L = C_L_alpha*alpha + C_L0;
+%     C_D = C_D_alpha*alpha + C_D0;
+%     C_M = C_M_alpha*alpha + C_M0;
 
-    C_L = C_L_alpha*alpha + C_L0;
-    C_D = C_D_alpha*alpha + C_D0;
-    C_M = C_M_alpha*alpha + C_M0;
+    % No, these tables are not ugly.
+    cl_vs_a_4412 =  [-9.457659372	-0.34322453;
+                    -8.80114177	    -0.380217606;
+                    -7.602283539	-0.449851632;
+                    -6.117982873	-0.484668645;
+                    -5.604186489	-0.449851632;
+                    -4.8905804	    -0.321463897;
+                    -2.692673644	0.037586548;
+                    -0.294957184	0.398813056;
+                    2.502378687	    0.742631058;
+                    5.756422455	    1.073392681;
+                    8.26831589	    1.304055391;
+                    8.839200761	    1.325816024;
+                    9.410085633	    1.33016815;
+                    10.4376784	    1.308407517;
+                    11.29400571	    1.33016815;
+                    13.00666032	    1.443323442;
+                    14.26260704	    1.465084075;
+                    15.23311132	    1.408506429;
+                    15.97526166	    1.33016815;
+                    17.05994291	    1.186547972];
+
+    
+
 end
 
 function S_m2 = get_S(aero_surface)
-    Ss = [0.1, 0.05, 1, 1]; %placeholders
+    Ss = [0.18, 0.09, 0.55, 0.55]; % Real aircraft aero surface areas
     S_m2 = Ss(aero_surface);
 end
 
 function chord_m = get_c(aero_surface)
-    cs = [0.2, 0.2, 0.4, 0.4]; %placeholders
+    cs = [0.2, 0.2, 0.72, 0.72]; %placeholders
     chord_m = cs(aero_surface);
 end
 
 function position_m = get_pos(aero_surface)
 % h. stab, v. stab, R wing, L wing
-    poss = [-0.7, -0.7,  0,    0;   % Forward
-             0,    0,    0.5, -0.5; % Right
-             0,   -0.2,  0,    0];  % Down, placeholders
+    poss = [-1.75, -1.75,  -0.34,    -0.34;   % Forward. 
+             0,    0,    0.24, -0.24; % Right
+             0,   -0.125,  0,    0];  % Down. Real aircraft positions
 
     position_m = poss(:, aero_surface);
 end
@@ -111,7 +136,7 @@ function alpha = get_alpha(aero_surface, v_B_BfromA)
 end
 
 function incidence_angle = get_i(aero_surface)
-    is = [-3*pi/180, 0, 0, 0]; %placeholder
+    is = [-2.5*pi/180, 0, 0, 0]; % Real aircraft incidence angles
     incidence_angle = is(aero_surface);
 end
 
