@@ -25,6 +25,10 @@ rl_plots_on     = false; % True if root locus plots are needed
 
 [cg_m, m_kg, J_kgm2] = get_mass_props();
 
+m_kg = 7;
+cg_m = [1.54-1.75; 0; -0.018755961]; % My aircraft
+J_kgm2 = 20*J_kgm2;
+
 % Actuator models
 % order: elevator, rudder, right aileron, left aileron
 time_constant_matrix = 1*eye(4); % TODO figure out a better way to calculate these
@@ -36,10 +40,10 @@ lat_d           = 35.28; % N35.28
 lon_d           = -115;  % W115;
 ground_level_m  = 995;  % 995 for N35.28 W115 7968 Found through trial and error for N35.28 W-115
 altitude_m      = 100; 
-thrust_N        = [10*1;0;0];
+thrust_N        = [10*0;0;0];
 
 ExE_BfromE_0_m  = lla2ecef([lat_d, lon_d, ground_level_m + altitude_m])'; % SoCal
-EvB_BfromE_mps  = [50; 0.00001; 10]; % Velocity of the body in ECEF frame in the body CS
+EvB_BfromE_mps  = [20; 0.00001; 0.000001]; % Velocity of the body in ECEF frame in the body CS
 omega_BwrtN_dps = [0.00001; 0.00001; 10*0.0000001]; % roll pitch yaw rates, or phi theta psi rates. (IE, rotate about the down axis)
 omega_BwrtN_rps = deg2rad(omega_BwrtN_dps);
 omega_pure_quat = [0; omega_BwrtN_rps]';
