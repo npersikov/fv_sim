@@ -36,6 +36,7 @@ for up_vel = alpha_test_range
 % NOTE this is actually v_B_BfromA, which must be properly determined when 
 % inputting it into this function
 v_mps = [20; 0; up_vel]; % Placeholder. 
+omega_BfromE_radps = [0; 0; 0];
 
 % ========== Allocate arrays ==========
 % This array stores net force vectors for each control surface
@@ -47,11 +48,11 @@ for aero_surface = 1:1:4 % There are assumed to be only 4 aero surfaces
     % Quantities that must be determined for each control surface in this
     % layer of the code. Stuff like incidence angle will be determined
     % where it is directly required (for organizational purposes).
-    [C_L, C_D, C_M, alpha]      = get_coeffs_linearized(aero_surface, v_mps); % v_mps is needed to determine alpha
     S_m2                        = get_S(aero_surface);
     chord_m                     = get_c(aero_surface);
     position_m                  = get_pos(aero_surface) + 0.25*get_c(aero_surface)*[1;0;0]; % Apply quarter chord rule
-    
+    [C_L, C_D, C_M, alpha]      = get_coeffs_linearized(aero_surface, v_mps, omega_BfromE_radps, position_m); % v_mps is needed to determine alpha
+
     alphas(aero_surface, up_vel_index) = alpha; % Save off angles of attack for plotting
 
     % The force is the vector sum of the lift and drag vectors. The lift
@@ -349,12 +350,12 @@ function [C_L, C_D, C_M] = get_coeffs(aero_surface, v_mps)
 end
 
 
-function [C_L, C_D, C_M, alpha] = get_coeffs_linearized(aero_surface, v_mps)
+function [C_L, C_D, C_M, alpha] = get_coeffs_linearized(aero_surface, v_mps, omega_BfromE, x_surf_from_cg)
 
     if norm(v_mps) == 0
         alpha = 0;
     else
-        alpha = get_alpha(aero_surface, v_mps)*180/pi;
+        alpha = get_alpha(aero_surface, v_mps, omega_BfromE, x_surf_from_cg)*180/pi;
     end
 
     % Ratios of 4412 to 4424 airfoils in the main wing
@@ -500,11 +501,13 @@ function position_m = get_pos(aero_surface)
     position_m = poss(:, aero_surface);
 end
 
-function alpha = get_alpha(aero_surface, v_B_BfromA)
+function alpha = get_alpha(aero_surface, v_B_BfromA, omega_BfromE, x_surf_from_cg)
     surf_vec        = get_surf_vec(aero_surface);
     incidence_angle = get_i(aero_surface);
 
-    alpha = incidence_angle - asin(dot(v_B_BfromA, surf_vec)/norm(v_B_BfromA));
+    v_eff = v_B_BfromA + cross(omega_BfromE, x_surf_from_cg);
+
+    alpha = incidence_angle - asin(dot(v_eff, surf_vec)/norm(v_eff));
 end
 
 function incidence_angle = get_i(aero_surface)
