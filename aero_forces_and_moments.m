@@ -21,7 +21,7 @@ cg_m = [-0.496987516; 0; -0.018755961]; % Real aircraft cm
 % ========== State Vectors ==========
 % NOTE this is actually v_B_BfromA, which must be properly determined when 
 % inputting it into this function
-v_mps = [100; 0; -2]; % Placeholder. 
+v_mps = [20; 0; -1]; % Placeholder. 
 
 % ========== Allocate arrays ==========
 % This array stores net force vectors for each control surface
@@ -74,7 +74,11 @@ total_moment_b_Nm   = sum(aero_moments,2);
 
 function [C_L, C_D, C_M] = get_coeffs(aero_surface, v_mps)
 
-    alpha = get_alpha(aero_surface, v_mps);
+    if norm(v_mps) == 0
+        alpha = 0;
+    else
+        alpha = get_alpha(aero_surface, v_mps)*180/pi;
+    end
 
 %     [C_L_alpha, C_D_alpha, C_M_alpha] = get_slopes(aero_surface);
 %     [C_L0, C_D0, C_M0]                = get_coeff_offset(aero_surface);
