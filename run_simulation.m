@@ -26,7 +26,7 @@ rl_plots_on     = false; % True if root locus plots are needed
 [cg_m, m_kg, J_kgm2] = get_mass_props();
 
 m_kg = 7;
-cg_m = [-0.496987516; 0; -0.018755961];
+cg_m = [1.54-1.75; 0; -0.018755961]; % My aircraft
 J_kgm2 = 20*J_kgm2;
 
 % Actuator models

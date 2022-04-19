@@ -1,3 +1,7 @@
+clc
+clear
+close all
+
 % This function will calculate aerodynamic forces on my plane. I am
 % starting over because the last function was written all at once without
 % testing. I will not make that mistake this time!
@@ -15,13 +19,23 @@ rho_kgpm3 = 1.225;
 
 % ========== Overall Aircraft Characteristics ==========
 % Vector from aircraft frame center to the cg
-cg_m = [-0.496987516; 0; -0.018755961]; % Real aircraft cm
+% cg_m = [-0.496987516; 0; -0.018755961]; % Real aircraft cm
+cg_m = [1.54-1.75; 0; -0.018755961]; % Real aircraft cm
+
+alpha_test_range = -3:0.25:3;
+alphas          = zeros(4, length(alpha_test_range));
+pitch_moments   = zeros(4, length(alpha_test_range));
+total_pitch_moments = zeros(1, length(alpha_test_range));
+up_vel_index = 1;
+
+for up_vel = alpha_test_range
+
 
 % NOTE later these will be function inputs
 % ========== State Vectors ==========
 % NOTE this is actually v_B_BfromA, which must be properly determined when 
 % inputting it into this function
-v_mps = [20; 0; -1]; % Placeholder. 
+v_mps = [20; 0; up_vel]; % Placeholder. 
 
 % ========== Allocate arrays ==========
 % This array stores net force vectors for each control surface
@@ -33,11 +47,13 @@ for aero_surface = 1:1:4 % There are assumed to be only 4 aero surfaces
     % Quantities that must be determined for each control surface in this
     % layer of the code. Stuff like incidence angle will be determined
     % where it is directly required (for organizational purposes).
-    [C_L, C_D, C_M]     = get_coeffs(aero_surface, v_mps); % v_mps is needed to determine alpha
-    S_m2                = get_S(aero_surface);
-    chord_m             = get_c(aero_surface);
-    position_m          = get_pos(aero_surface) + 0.25*get_c(aero_surface)*[1;0;0]; % Apply quarter chord rule
+    [C_L, C_D, C_M, alpha]      = get_coeffs_linearized(aero_surface, v_mps); % v_mps is needed to determine alpha
+    S_m2                        = get_S(aero_surface);
+    chord_m                     = get_c(aero_surface);
+    position_m                  = get_pos(aero_surface) + 0.25*get_c(aero_surface)*[1;0;0]; % Apply quarter chord rule
     
+    alphas(aero_surface, up_vel_index) = alpha; % Save off angles of attack for plotting
+
     % The force is the vector sum of the lift and drag vectors. The lift
     % coefficient is multiplied by the upward direction vector, and the 
     % drag coefficient is multiplied by the backward direction vector
@@ -66,6 +82,34 @@ end
 total_force_b_N     = sum(aero_forces,2);
 total_moment_b_Nm   = sum(aero_moments,2);
 
+pitch_moments(:, up_vel_index) = aero_moments(2,:)'; % save off pitch moment for plotting
+total_pitch_moments(up_vel_index) = total_moment_b_Nm(2);
+
+up_vel_index = up_vel_index + 1;
+
+end
+
+% plot data for debugging
+surfaces = ["a_{el}", "a_{ru}", "a_{rw}", "a_{lw}"];
+figure()
+for plotnum = 1:1:4
+    subplot(2,2, plotnum)
+    plot(alphas(plotnum, :), pitch_moments(plotnum, :));
+    xlabel("surface alpha");
+    ylabel("surface pitch moment");
+    title(surfaces(plotnum));
+    hold on
+    grid on
+end
+
+figure()
+plot(mean(alphas), total_pitch_moments)
+title("total pitching moment vs average alpha");
+xlabel("average alpha");
+ylabel("total pitch moment");
+grid on
+
+
 
 % ========== Functions ==========
 
@@ -79,13 +123,6 @@ function [C_L, C_D, C_M] = get_coeffs(aero_surface, v_mps)
     else
         alpha = get_alpha(aero_surface, v_mps)*180/pi;
     end
-
-%     [C_L_alpha, C_D_alpha, C_M_alpha] = get_slopes(aero_surface);
-%     [C_L0, C_D0, C_M0]                = get_coeff_offset(aero_surface);
-% 
-%     C_L = C_L_alpha*alpha + C_L0;
-%     C_D = C_D_alpha*alpha + C_D0;
-%     C_M = C_M_alpha*alpha + C_M0;
 
     % Ratios of 4412 to 4424 airfoils in the main wing
     ratio_4412 = 0.39;
@@ -311,13 +348,146 @@ function [C_L, C_D, C_M] = get_coeffs(aero_surface, v_mps)
     end  
 end
 
+
+function [C_L, C_D, C_M, alpha] = get_coeffs_linearized(aero_surface, v_mps)
+
+    if norm(v_mps) == 0
+        alpha = 0;
+    else
+        alpha = get_alpha(aero_surface, v_mps)*180/pi;
+    end
+
+    % Ratios of 4412 to 4424 airfoils in the main wing
+    ratio_4412 = 0.39;
+    ratio_4424 = 0.71;
+
+    % No, these tables are not ugly.
+    cl_vs_a_4412 =  [-4.8905804	    -0.321463897;
+                    -2.692673644	0.037586548;
+                    -0.294957184	0.398813056;
+                    2.502378687	    0.742631058;
+                    5.756422455	    1.073392681;];
+    
+    cd_vs_a_4412 = [-9.476102941	1.070291262	;
+                    -8.979779412	1.054757282	;
+                    -8.483455882	0.977087379	;
+                    -7.766544118	0.942912621	;
+                    -6.884191176	0.859029126	;
+                    -6.443014706	0.793786408	;
+                    -5.78125	    0.728543689	;
+                    -5.395220588	0.672621359	;
+                    -5.174632353	0.36815534	;
+                    -4.126838235	0.281165049	;
+                    -2.362132353	0.228349515	;
+                    -1.09375	    0.187961165	;
+                    1.773897059	    0.175533981	;
+                    5.799632353	    0.212815534	;
+                    8.612132353	    0.231456311	;
+                    9.273897059	    0.250097087	;
+                    9.715073529	    0.274951456	;
+                    11.03860294	    0.377475728	;
+                    12.80330882	    0.504854369	;
+                    14.18198529	    0.644660194	;
+                    15.28492647	    0.809320388	;
+                    15.89154412	    0.980194175	;
+                    16.55330882	    1.200776699	;
+                    17.02205882	    1.408932039	;];
+
+    cm_vs_a_4412 = [-1.257142857	-0.099047619	;
+                    -0.685714286	-0.102619048	;
+                    0.114285714	    -0.104761905	;
+                    0.8	            -0.10547619	;];
+
+
+    cl_vs_a_4424 = [-4.144486692	-0.026627219	;
+                    3.688212928	    0.482248521	;
+                    4.942965779	    0.795857988	;];
+
+    cd_vs_a_4424 = [-19.7053407	    0.081532493	;
+                    -17.9373849	    0.059010669	;
+                    -16.24309392	0.041551891	;
+                    -15.21178637	0.033608147	;
+                    -13.55432781	0.024616877	;
+                    -12.11786372	0.019379243	;
+                    -10.64456722	0.016062076	;
+                    -7.771639042	0.012919496	;
+                    -3.94106814	    0.011522793	;
+                    4.198895028	    0.012046557	;
+                    5.856353591	    0.014839961	;
+                    7.845303867	    0.017633366	;
+                    10.71823204	    0.024093113	;
+                    13.00184162	    0.034219205	;
+                    15.69060773	    0.052463628	;
+                    19.33701657	    0.089039767	;];
+
+    cm_vs_a_4424 = [-6.131805158	-0.114373757	;
+                    -3.075453677	-0.07	;
+                    0.05730659	    -0.038866799	;
+                    3.495702006	    -0.009522863	;
+                    3.954154728	    -0.012385686	;];
+
+    cl_vs_a_0006 = [-5.970149254	-0.628073572	;
+                    -3.097014925	-0.380251694	;
+                    -2.649253731	-0.29661181	;
+                    -2.462686567	-0.222265247	;
+                    0               0;
+                    2.611940299	    0.217618587	;
+                    3.02238806	    0.357018393	;
+                    4.067164179	    0.44375605	;];
+
+    cd_vs_a_0006 = [-9.485294118	0.114191675	;
+                    -6.599264706	0.057153921	;
+                    -5.422794118	0.032061955	;
+                    -4.0625	        0.018121975	;
+                    -2.775735294	0.010919652	;
+                    0.165441176	    0.009757986	;
+                    3.216911765	    0.011151985	;
+                    4.724264706	    0.022303969	;
+                    5.790441176	    0.036708616	;
+                    6.893382353	    0.064123911	;
+                    9.246323529	    0.109893514	;];
+
+    cm_vs_a_0006 = [-2.32668566	    -0.007826087	;
+                    -0.009496676	-1.39E-17	;
+                    0               0;
+                    2.57359924	    0.008063241	;];
+
+    if aero_surface == 1 || aero_surface == 2 % Horizontal or Vertical Stabilizer, 0006
+        C_L = interp1(cl_vs_a_0006(:,1), cl_vs_a_0006(:,2), alpha, 'linear', 'extrap');
+        C_D = interp1(cd_vs_a_0006(:,1), cd_vs_a_0006(:,2), alpha, 'linear', 'extrap');
+        C_M = interp1(cm_vs_a_0006(:,1), cm_vs_a_0006(:,2), alpha, 'linear', 'extrap');
+
+    elseif aero_surface == 3 || aero_surface == 4 % Wing, 4412 and 4424
+
+        % For these, since the wing uses two different airfoils, the net
+        % coefficients are averages weighted by the areas.
+
+        C_L = interp1(cl_vs_a_4412(:,1), cl_vs_a_4412(:,2), alpha, 'linear', 'extrap')*...
+            ratio_4412 + interp1(cl_vs_a_4424(:,1), ...
+            cl_vs_a_4424(:,2), alpha, 'linear', 'extrap')*ratio_4424;
+
+        C_D = interp1(cd_vs_a_4412(:,1), cd_vs_a_4412(:,2), alpha, 'linear', 'extrap')*...
+            ratio_4412 + interp1(cd_vs_a_4424(:,1), ...
+            cd_vs_a_4424(:,2), alpha, 'linear', 'extrap')*ratio_4424;
+
+        C_M = interp1(cm_vs_a_4412(:,1), cm_vs_a_4412(:,2), alpha, 'linear', 'extrap')*...
+            ratio_4412 + interp1(cm_vs_a_4424(:,1), ...
+            cm_vs_a_4424(:,2), alpha, 'linear', 'extrap')*ratio_4424;
+
+    else % In case someone inputs an aero surface that doesn't exist
+        error("The aero surface does not exist");
+    end  
+end
+
+
+
 function S_m2 = get_S(aero_surface)
     Ss = [0.18, 0.09, 0.55, 0.55]; % Real aircraft aero surface areas
     S_m2 = Ss(aero_surface);
 end
 
 function chord_m = get_c(aero_surface)
-    cs = [0.2, 0.2, 0.72, 0.72]; %placeholders
+    cs = [0.2, 0.2, 0.72, 0.72]; % Real aircraft chords
     chord_m = cs(aero_surface);
 end
 
