@@ -15,7 +15,7 @@ rho_kgpm3 = 1.225;
 
 % ========== Overall Aircraft Characteristics ==========
 % Vector from aircraft frame center to the cg
-cg_m = [-0.496987516; 0; -0.018755961]; % Real aircraft cm
+cg_m = [-0.496987516, 0, -0.018755961]; % Real aircraft cm
 
 % NOTE later these will be function inputs
 % ========== State Vectors ==========
@@ -36,7 +36,7 @@ for aero_surface = 1:1:4 % There are assumed to be only 4 aero surfaces
     [C_L, C_D, C_M]     = get_coeffs(aero_surface, v_mps); % v_mps is needed to determine alpha
     S_m2                = get_S(aero_surface);
     chord_m             = get_c(aero_surface);
-    position_m          = get_pos(aero_surface) + 0.25*get_c(aero_surface)*[1;0;0]; % Apply quarter chord rule
+    position_m          = get_pos(aero_surface);
     
     % The force is the vector sum of the lift and drag vectors. The lift
     % coefficient is multiplied by the upward direction vector, and the 
@@ -242,7 +242,6 @@ function [C_L, C_D, C_M] = get_coeffs(aero_surface, v_mps)
                     -3.097014925	-0.380251694	;
                     -2.649253731	-0.29661181	;
                     -2.462686567	-0.222265247	;
-                    0               0;
                     2.611940299	    0.217618587	;
                     3.02238806	    0.357018393	;
                     4.067164179	    0.44375605	;
@@ -269,7 +268,6 @@ function [C_L, C_D, C_M] = get_coeffs(aero_surface, v_mps)
                     -2.744539411	0.007233202	;
                     -2.32668566	    -0.007826087	;
                     -0.009496676	-1.39E-17	;
-                    0               0;
                     2.57359924	    0.008063241	;
                     2.877492877	    -0.007114625	;
                     5.764482431	    0.010316206	;
@@ -279,30 +277,19 @@ function [C_L, C_D, C_M] = get_coeffs(aero_surface, v_mps)
         C_L = interp1(cl_vs_a_0006(:,1), cl_vs_a_0006(:,2), alpha);
         C_D = interp1(cd_vs_a_0006(:,1), cd_vs_a_0006(:,2), alpha);
         C_M = interp1(cm_vs_a_0006(:,1), cm_vs_a_0006(:,2), alpha);
-
     elseif aero_surface == 2 % Vertical Stabilizer, 0006
         C_L = interp1(cl_vs_a_0006(:,1), cl_vs_a_0006(:,2), alpha);
         C_D = interp1(cd_vs_a_0006(:,1), cd_vs_a_0006(:,2), alpha);
         C_M = interp1(cm_vs_a_0006(:,1), cm_vs_a_0006(:,2), alpha);
-
-    elseif aero_surface == 3 || aero_surface == 4 % Wing, 4412 and 4424
-
-        % For these, since the wing uses two different airfoils, the net
-        % coefficients are averages weighted by the areas.
-
-        C_L = interp1(cl_vs_a_4412(:,1), cl_vs_a_4412(:,2), alpha)*...
-            ratio_4412 + interp1(cl_vs_a_4424(:,1), ...
-            cl_vs_a_4424(:,2), alpha)*ratio_4424;
-
-        C_D = interp1(cd_vs_a_4412(:,1), cd_vs_a_4412(:,2), alpha)*...
-            ratio_4412 + interp1(cd_vs_a_4424(:,1), ...
-            cd_vs_a_4424(:,2), alpha)*ratio_4424;
-
-        C_M = interp1(cm_vs_a_4412(:,1), cm_vs_a_4412(:,2), alpha)*...
-            ratio_4412 + interp1(cm_vs_a_4424(:,1), ...
-            cm_vs_a_4424(:,2), alpha)*ratio_4424;
-
-    else % In case someone inputs an aero surface that doesn't exist
+    elseif aero_surface == 3 % Right Wing, 4412 and 4424
+        C_L = interp1(cl_vs_a_0006(:,1), cl_vs_a_0006(:,2), alpha);
+        C_D = interp1(cd_vs_a_0006(:,1), cd_vs_a_0006(:,2), alpha);
+        C_M = interp1(cm_vs_a_0006(:,1), cm_vs_a_0006(:,2), alpha);
+    elseif aero_surface == 4 % Left Wing, 4412 and 4424
+        C_L = ;
+        C_D = ;
+        C_M = ;
+    else
         error("The aero surface does not exist");
     end  
 end
