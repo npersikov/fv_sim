@@ -12,7 +12,7 @@ function C_L = elevator_contrib(alpha_deg, delta_e_deg)
     cls_down        = [-0.316498316, -0.414141414, 1.168350168, 0.922558923];
     cls_neutral     = [-0.400673401, -0.464646465, 1.053872054, 0.784511785];
     cls_up          = [-0.474747475, -0.565656566, 0.929292929, 0.67003367];
-
+    
     % In order, these are d_E = -10, 0, 10
     d_Es = [-10, 0, 10];
     cl_down = interp1(alphas_down, cls_down, alpha_deg, 'linear', 'extrap');

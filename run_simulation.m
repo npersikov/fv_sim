@@ -40,7 +40,7 @@ lat_d           = 35.28; % N35.28
 lon_d           = -115;  % W115;
 ground_level_m  = 995;  % 995 for N35.28 W115 7968 Found through trial and error for N35.28 W-115
 altitude_m      = 100; 
-thrust_N        = [10*0;0;0];
+thrust_N        = [10*1;0;0];
 
 ExE_BfromE_0_m  = lla2ecef([lat_d, lon_d, ground_level_m + altitude_m])'; % SoCal
 EvB_BfromE_mps  = [20; 0.00001; 0.000001]; % Velocity of the body in ECEF frame in the body CS
@@ -143,12 +143,14 @@ end
 % B = magic(9);
 % B = B(:,1);
 % Weight Matrices for LQR controller
-Q = 1*eye(length(x)) + 0.01 * magic(length(x)); % Make this larger for aggressive correction
-R = 100*eye(length(u));
+Q = 1*eye(length(x)) + 0.01 * ones(length(x)); % Make this larger for aggressive correction
+R = 10*eye(length(u));
 N = zeros(length(x),length(u));
 % LQR control gains
 % [K_lqr,~,~] = lqr(A, B, Q, R, N);
+
 [K_lqr,~,~] = lqr(lin_sys.a, lin_sys.b, Q, R, N);
+
 % With thrust on, K_lqr can be determined. It is:
 % K_lqr = [-3.02453481973423	0.200987337098554	0.297266261308987 ...
 % -190130702.677928	-129205.574640224	-38024779.7004798 ...	
