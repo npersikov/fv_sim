@@ -359,8 +359,8 @@ function [C_L, C_D, C_M, alpha] = get_coeffs_linearized(aero_surface, v_mps, ome
     end
 
     % Ratios of 4412 to 4424 airfoils in the main wing
-    ratio_4412 = 0.39;
-    ratio_4424 = 0.71;
+    ratio_4412 = 0.6357;
+    ratio_4424 = 0.3643;
 
     % No, these tables are not ugly.
     cl_vs_a_4412 =  [-4.8905804	    -0.321463897;

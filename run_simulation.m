@@ -40,11 +40,11 @@ lat_d           = 35.28; % N35.28
 lon_d           = -115;  % W115;
 ground_level_m  = 995;  % 995 for N35.28 W115 7968 Found through trial and error for N35.28 W-115
 altitude_m      = 100; 
-thrust_N        = [10*1;0;0];
+thrust_N        = [10*0;0;0];
 
 ExE_BfromE_0_m  = lla2ecef([lat_d, lon_d, ground_level_m + altitude_m])'; % SoCal
-EvB_BfromE_mps  = [20; 0.00001; 0.000001]; % Velocity of the body in ECEF frame in the body CS
-omega_BwrtN_dps = [0.00001; 0.00001; 10*0.0000001]; % roll pitch yaw rates, or phi theta psi rates. (IE, rotate about the down axis)
+EvB_BfromE_mps  = [20; 0; -2]; % Velocity of the body in ECEF frame in the body CS
+omega_BwrtN_dps = [0; 0; 0]; % roll pitch yaw rates, or phi theta psi rates. (IE, rotate about the down axis)
 omega_BwrtN_rps = deg2rad(omega_BwrtN_dps);
 omega_pure_quat = [0; omega_BwrtN_rps]';
 
@@ -61,7 +61,7 @@ omega_BwrtI_rps_0           = omega_BwrtN_rps + omega_EwrtI_rps_0; % since initi
 % to the y axis, and they spin forwards, which adds a positive reaction
 % moment. Turning them on and switching direction will be handled in the
 % simulink model.
-payload_release_motor_moment_Nm = [0; 1.08; 0]; 
+payload_release_motor_moment_Nm = [0; 1.08*0; 0]; 
 
 %% Control Inputs
 aoa_step_time = 10;
@@ -87,7 +87,7 @@ aoa_gain = 500*0; % The gain for angle of attack. Used to command the elevator d
 bank_angle_gain = 100*0; 
 
 % Trim the simulink model
-[x,u,y,dx] = trim('fv_sim_linearized');
+[x,u,y,dx] = trim('fv_sim_linearized', [EvB_BfromE_mps; euler_angles_BfromN_0_deg; omega_BwrtN_dps], 0, [0, atan2(EvB_BfromE_mps(1), EvB_BfromE_mps(3))]');
 % The order that I think the states are in in the x vector
 states = ["vel_x", "vel_y", "vel_z", "avel_x", "avel_y", "avel_z", "psi", "theta", "phi"];
 
@@ -110,6 +110,18 @@ if rl_plots_on
 %         disp("Eigenvalue for " + states(rl_plot_num) + ": " + lin_eigs);
 %     end
 
+    figure()
+    plot(lin_eigs,'O','color','green')
+    grid on 
+
+    sys = tf(num_coeff(1,:), den_coeff); 
+    figure()
+    rlocus(sys);
+
+    sys = tf(num_coeff(2,:), den_coeff); 
+    figure()
+    rlocus(sys);
+
     % Pitch Plots
 %     sys = tf(num_coeff(8,:), den_coeff); 
 %     figure()
@@ -118,25 +130,25 @@ if rl_plots_on
 %     rlocus(sys, pitch_gain);
 
     % Roll Plots
-    sys = tf(num_coeff(6,:), den_coeff); 
-    figure()
-    rlocus(sys);
-    title("Roll Rate (General Plot)");
-    figure()
-    rlocus(sys, roll_rate_gain);
-    title("Roll Rate (With Gain)");
-
-    sys = tf(num_coeff(9,:), den_coeff); 
-    figure()
-    rlocus(sys);
-    title("Bank Angle (General Plot)");
-    figure()
-    rlocus(sys, bank_angle_gain);
-    title("Bank Angle (With Gain)");
-
-%     roll_step_response_info = stepinfo(sys);
-    figure()
-    step(sys);
+%     sys = tf(num_coeff(6,:), den_coeff); 
+%     figure()
+%     rlocus(sys);
+%     title("Roll Rate (General Plot)");
+%     figure()
+%     rlocus(sys, roll_rate_gain);
+%     title("Roll Rate (With Gain)");
+% 
+%     sys = tf(num_coeff(9,:), den_coeff); 
+%     figure()
+%     rlocus(sys);
+%     title("Bank Angle (General Plot)");
+%     figure()
+%     rlocus(sys, bank_angle_gain);
+%     title("Bank Angle (With Gain)");
+% 
+% %     roll_step_response_info = stepinfo(sys);
+%     figure()
+%     step(sys);
 end
 
 % A = magic(9);
@@ -149,7 +161,7 @@ N = zeros(length(x),length(u));
 % LQR control gains
 % [K_lqr,~,~] = lqr(A, B, Q, R, N);
 
-[K_lqr,~,~] = lqr(lin_sys.a, lin_sys.b, Q, R, N);
+% [K_lqr,~,~] = lqr(lin_sys.a, lin_sys.b, Q, R, N);
 
 % With thrust on, K_lqr can be determined. It is:
 % K_lqr = [-3.02453481973423	0.200987337098554	0.297266261308987 ...
@@ -170,30 +182,60 @@ euler_angles_NfromB_deg = rad2deg(simout.euler_angles_NfromB_rad);
 
 %% ===== Post Processing =====
 if plots_on
-    
-    problem = "Problem 2b: ";
-    figure(1)
-    title("Unique initial conditions");
-    subplot(1,3,1);
-    plot(tout, ExE_BfromE_m(:,1));
-    title("X position vs time");
-    subplot(1,3,2);
-    plot(tout, ExE_BfromE_m(:,2));
-    title("Y position vs time");
-    subplot(1,3,3);
-    plot(tout, ExE_BfromE_m(:,3));
-    title("Z position vs time");
-    
-    figure(2)
-    title("Angular position");
-    subplot(1,3,1);
-    plot(tout, euler_angles_NfromB_deg(:,1));
-    title("Rotation about Z (degrees) vs time (s)");
-    subplot(1,3,2);
-    plot(tout, euler_angles_NfromB_deg(:,2));
-    title("Rotation about Y (degrees) vs time (s)");
-    subplot(1,3,3);
-    plot(tout, euler_angles_NfromB_deg(:,3));
-    title("Rotation about X (degrees) vs time (s)");
 
+    % This is the position of the plane in E frame and CS wrt E
+    positions = squeeze(simout.ExE_BfromE_m.signals.values); 
+    velocities = squeeze(simout.EvE_BfromE_mps.signals.values);
+    
+    % Get the time indeces of the (phugoid) steady state which is 
+    % expected to start at 10 seconds
+    time_ss = 30;
+    time_array = simout.tout;
+
+    positions_from_velocities = cumtrapz(time_array, velocities');
+    initial_position = positions(:,1);
+
+    simulation_time = time_array(end);
+    t_index_ss = find(time_array > time_ss);
+    i_t_0_ss = t_index_ss(1); % index of initial time of steady state
+    i_t_f_ss = t_index_ss(length(t_index_ss)); % ^ for final time
+
+    % Since end may work, delete i_t_f_ss?
+    avg_velocity_from_velocities = mean(velocities(:, i_t_0_ss:end),2);
+    avg_velocity_from_positions = (positions(:,end) - positions(:,i_t_0_ss))/(simulation_time - time_array(i_t_0_ss));
+    % These should start at the initial position, not at (0,0,0);
+%     avg_positions = avg_velocity_from_velocities*time_array(i_t_0_ss, end)' + initial_position;
+    avg_positions = avg_velocity_from_positions*time_array(i_t_0_ss:end)';
+
+    % plot the difference between actual position and would-be position if
+    % the plane always flew at its average speed (as calculated after the
+    % assumed steady-state time, generally 10 seconds)
+%     plot3(positions(1,i_t_0_ss:end) - avg_positions(1,:), positions(2,i_t_0_ss:end) - avg_positions(2,:), time_array(i_t_0_ss:end));
+    plot3(positions(1,i_t_0_ss:end) - initial_position(1) - avg_positions(1,:), positions(3,i_t_0_ss:end) - initial_position(3) - avg_positions(3,:), time_array(i_t_0_ss:end));
+%     plot(positions(1,i_t_0_ss:end)- initial_position(1)-avg_positions(1,:), positions(3,i_t_0_ss:end)- initial_position(3) - avg_positions(3,:));
+%     axis equal
+    xlabel("real x position offset from time-averaged x position");
+    ylabel("real z position offset from time-averaged z position");
+    zlabel("time (s)");
+    title("motion of plane relative to expected position " + ...
+        "based on average velocity");
+    grid on
+
+    figure()
+    relevant_times = time_array(i_t_0_ss:end);
+    x_downrange = positions(1,i_t_0_ss:end) - initial_position(1);
+%     plot(relevant_times, x_downrange);
+%     hold on 
+%     plot(relevant_times, 3.771*relevant_times - 118.2);
+%     grid on
+%     xlabel("time");
+%     ylabel("x position, real and trendline");
+% %     zlabel("time (s)");
+%     title("motion of plane relative to expected position " + ...
+%         "based on average velocity");
+
+%     figure()
+    plot(relevant_times, positions(3,i_t_0_ss:end)- initial_position(3) - avg_positions(3,:));
+    title("diff in averaged and real y vs time")
+        
 end
